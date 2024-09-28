@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Chat com Socket.IO</title>
+    <style>
+        body {
+            background-color: #000000;
+            color: #ffffff;
+        }
+
+        img {
+            border: 1px solid #ffffff;
+        }
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+
+<body>
+    <script>
+        const socket = io();
+        let viewport;
+        let nImg = new Image()
+        nImg.crossOrigin = "anonymous"
+        nImg.style.width = "100%"
+
+        socket.on("con", function (windowData) {
+            viewport = windowData
+            console.log("%cI'M ON ✅", "color: green;")
+            console.log(`%cviewport = (${viewport.width}x${viewport.height})`, "color: yellow;")
+            socket.emit("screenshot")
+        });
+
+        socket.on("screenshot", (base64) => {
+            nImg.src = `data:image/png;base64,${base64}`
+            console.log("%cBase64 Image Received", "color: green;")
+            setTimeout(() => {
+                socket.emit("screenshot")
+            }, 1000);
+        })
+
+        function click(x, y) {
+            if (viewport) {
+                const brect = nImg.getBoundingClientRect()
+                const left = Math.abs(x - brect.left)
+                const top = Math.abs(y - brect.top)
+
+                const X = map(left, 0, brect.width, 0, viewport.width)
+                const Y = map(top, 0, brect.height, 0, viewport.height - 190)
+
+                socket.emit("click", { x: X, y: Y })
+                console.log(`%cClick in execution. (${X}, ${Y})`, "color: yellow;")
+            }
+        }
+
+        function map(n, start1, stop1, start2, stop2, withinBounds) {
+            const newval = (n - start1) / (stop1 - start1) * (stop2 - start2) + start2;
+            if (!withinBounds) {
+                return newval;
+            }
+            if (start2 < stop2) {
+                return Math.max(Math.min(newval, stop2), start2);
+            } else {
+                return Math.max(Math.min(newval, start2), stop2);
+            }
+        }
+
+        nImg.addEventListener("click", (e) => {
+            click(e.clientX, e.clientY)
+        })
+
+        document.body.appendChild(nImg)
+        socket.emit("con")
+    </script>
+</body>
+
+</html>
