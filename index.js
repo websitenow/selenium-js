@@ -5,8 +5,7 @@ const socketIO = require("socket.io");
 const { Builder, Button, Origin } = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
 
-const url = "https://google.com"//"https://twitter.com/i/flow/login"
-//1050x500
+const url = "https://google.com"
 
 /* ========== */
 const app = express();
